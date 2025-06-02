@@ -1,10 +1,19 @@
-# Put your Behat suites definitions here
-
 default:
     suites:
-        greeting_customer:
+        brevo_mailer:
             contexts:
-                - acme_sylius_example.context.ui.shop.welcome
+                - sylius.behat.context.hook.doctrine_orm
+                - sylius.behat.context.transform.channel
+                - sylius.behat.context.transform.shared_storage
+
+
+                - sylius.behat.context.setup.channel
+                - sylius.behat.context.setup.locale
+                - sylius.behat.context.setup.user
+                - sylius.behat.context.ui.shop.registration
+                
+                - klehm_sylius_brevo_plugin.context.cli.list_brevo_transactional_templates
+                - klehm_sylius_brevo_plugin.context.setup.brevo
 
             filters:
-                tags: "@greeting_customer"
+                tags: "@brevo_mailer"

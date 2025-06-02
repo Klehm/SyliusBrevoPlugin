@@ -1,0 +1,15 @@
+imports:
+  - { resource: "contexts.yml" }
+
+services:
+    klehm_sylius_brevo_plugin.api.brevo_client:
+        parent: 'Klehm\SyliusBrevoPlugin\Api\BrevoApiClient'
+        class: Tests\Klehm\SyliusBrevoPlugin\Behat\Fake\AlwaysSuccessBrevoClient
+        # Use the BrevoApiClient for real API calls with API key, comment 2 lines above and uncomment the next line  
+        # class: 'Klehm\SyliusBrevoPlugin\Api\BrevoApiClient'
+        public: true
+        arguments:
+            $apiKey: "%klehm_sylius_brevo.api_key%"
+            $templateMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilderInterface'
+            $htmlMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilderInterface'
+

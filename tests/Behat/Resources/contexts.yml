@@ -1,0 +1,16 @@
+services:
+    _defaults: { public: true }
+
+    klehm_sylius_brevo_plugin.context.cli.list_brevo_transactional_templates:
+        class: Tests\Klehm\SyliusBrevoPlugin\Behat\Context\Cli\ListBrevoTransactionalTemplatesContext
+        arguments:
+            - '@kernel'
+
+    klehm_sylius_brevo_plugin.context.setup.brevo:
+        class: Tests\Klehm\SyliusBrevoPlugin\Behat\Context\Setup\BrevoContext
+        arguments:
+            - "%klehm_sylius_brevo.api_key%"
+            - '@Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface'
+            - '@klehm_sylius_brevo_plugin.api.brevo_client'
+            - '@sylius.behat.shared_storage'
+

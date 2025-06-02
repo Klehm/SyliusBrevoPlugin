@@ -1,0 +1,6 @@
+klehm_sylius_brevo:
+    api_key: '%env(BREVO_API_KEY)%'
+    templates:
+        en_US:
+            user_registration: 1
+        

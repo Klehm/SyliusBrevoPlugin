@@ -1,10 +1,12 @@
 {
+    "name": "klehm/sylius-brevo-mailer-plugin",
     "type": "sylius-plugin",
     "keywords": [
         "sylius",
         "sylius-plugin"
     ],
-    "license": "proprietary",
+    "description": "A Sylius plugin to send mails through Brevo transactional templates.",
+    "license": "MIT",
     "require": {
         "php": "^8.2",
         "sylius/sylius": "~2.0.0"
@@ -58,8 +60,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Acme\\SyliusExamplePlugin\\": "src/",
-            "Tests\\Acme\\SyliusExamplePlugin\\": "tests/"
+            "Klehm\\SyliusBrevoPlugin\\": "src/",
+            "Tests\\Klehm\\SyliusBrevoPlugin\\": "tests/"
         }
     },
     "autoload-dev": {

@@ -6,3 +6,6 @@ parameters:
         - public/
         - src/
         - tests/
+
+    ignoreErrors:
+        - '/Parameter #1 \$json of function json_decode expects string, string\|true given./'

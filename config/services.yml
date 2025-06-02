@@ -1,0 +1,39 @@
+services:
+    klehm_sylius_brevo_mailer.sender_adapter:
+        class: Klehm\SyliusBrevoPlugin\Mailer\Adapter\BrevoAdapter
+        arguments:
+            $brevoMailer: '@Klehm\SyliusBrevoPlugin\Mailer\BrevoMailerInterface'
+
+    Klehm\SyliusBrevoPlugin\Provider\TemplateIdProvider:
+        arguments:
+            $templates: '%klehm_sylius_brevo_mailer.templates%'
+    Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface: '@Klehm\SyliusBrevoPlugin\Provider\TemplateIdProvider'
+
+    Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer:
+        arguments:
+            $templateIdProvider: '@Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface'
+            $brevoApiClient: '@Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface'
+            $dispatcher: "@event_dispatcher"
+            $locale: '@sylius.context.locale'
+
+    Klehm\SyliusBrevoPlugin\Mailer\BrevoMailerInterface: '@Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer'
+
+    Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilder: ~
+    Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilderInterface: '@Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilder'
+    
+    Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilder: ~
+    Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilderInterface: '@Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilder'
+
+    Klehm\SyliusBrevoPlugin\Api\BrevoApiClient:
+        arguments:
+            $apiKey: "%klehm_sylius_brevo_mailer.api_key%"
+            $templateMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilderInterface'
+            $htmlMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilderInterface'
+
+    Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface: '@Klehm\SyliusBrevoPlugin\Api\BrevoApiClient'
+
+    Klehm\SyliusBrevoPlugin\Cli\ListBrevoTransactionalTemplatesCommand:
+        arguments:
+            $brevoApiClient: '@Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface'
+        tags:
+            - { name: "console.command" }
