@@ -1,4 +1,0 @@
-suites:
-    main:
-        namespace: Klehm\SyliusBrevoMailerPlugin
-        psr4_prefix: Klehm\SyliusBrevoMailerPlugin
