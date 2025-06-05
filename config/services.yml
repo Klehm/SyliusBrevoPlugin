@@ -1,1 +1,22 @@
 services:
+    klehm_sylius_brevo_mailer.sender_adapter:
+        parent: sylius.email_sender.adapter.abstract
+        class: Klehm\SyliusBrevoMailerPlugin\Mailer\Adapter\BrevoAdapter
+
+    Klehm\SyliusBrevoMailerPlugin\Provider\TemplateIdProvider: ~
+    Klehm\SyliusBrevoMailerPlugin\Provider\TemplateIdProviderInterface: '@Klehm\SyliusBrevoMailerPlugin\Provider\TemplateIdProvider'
+
+    Klehm\SyliusBrevoMailerPlugin\Mailer\BrevoMailer: ~
+    Klehm\SyliusBrevoMailerPlugin\Mailer\BrevoMailerInterface: '@Klehm\SyliusBrevoMailerPlugin\Mailer\BrevoMailer'
+
+    Klehm\SyliusBrevoMailerPlugin\Api\BrevoApiClient:
+        arguments:
+            $apiKey: '%brevo.api_key%'
+
+    Klehm\SyliusBrevoMailerPlugin\Api\BrevoApiClientInterface: '@Klehm\SyliusBrevoMailerPlugin\Api\BrevoApiClient'
+
+    Klehm\SyliusBrevoMailerPlugin\Cli\ListBrevoTransactionalTemplatesCommand:
+        arguments:
+            $brevoApiClient: '@Klehm\SyliusBrevoMailerPlugin\Api\BrevoApiClientInterface'
+        tags:
+            - { name: 'console.command' }
