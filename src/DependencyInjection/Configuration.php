@@ -9,13 +9,18 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 final class Configuration implements ConfigurationInterface
 {
-    /**
-     * @psalm-suppress UnusedVariable
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('klehm_sylius_brevo_mailer');
-        $rootNode = $treeBuilder->getRootNode();
+        $treeBuilder->getRootNode()
+            ->children()
+                ->arrayNode('templates')
+                    ->useAttributeAsKey('name')
+                    ->scalarPrototype()->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
 
         return $treeBuilder;
     }
