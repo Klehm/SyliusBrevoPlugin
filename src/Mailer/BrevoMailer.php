@@ -7,6 +7,7 @@ namespace Klehm\SyliusBrevoPlugin\Mailer;
 use Egulias\EmailValidator\EmailValidator;
 use Egulias\EmailValidator\Validation\RFCValidation;
 use Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface;
+use Klehm\SyliusBrevoPlugin\Event\BrevoMailerDataEvent;
 use Klehm\SyliusBrevoPlugin\Model\HtmlMessage;
 use Klehm\SyliusBrevoPlugin\Model\TemplateMessage;
 use Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface;
@@ -46,6 +47,8 @@ class BrevoMailer implements BrevoMailerInterface
         $templateId = $this->templateIdProvider->getId($email->getCode() ?? '', $this->locale->getLocaleCode());
         $replyTo = count($replyTo) > 0 ? $this->formatRecipients($replyTo) : ['name' => $senderName, 'email' => $senderAddress];
 
+        $data = $this->collectData($data, $email);
+
         if ($templateId) {
             $message = (new TemplateMessage())
                 ->setFrom(['name' => $senderName, 'email' => $senderAddress])
@@ -54,8 +57,8 @@ class BrevoMailer implements BrevoMailerInterface
                 ->setCc($this->formatRecipients($ccRecipients))
                 ->setBcc($this->formatRecipients($bccRecipients))
                 ->setAttachments($this->formatAttachments($attachments))
-                ->setTemplateId($templateId)
-                ->setData($data);
+                ->setData($data)
+                ->setTemplateId($templateId);
 
             $emailSendEvent = new EmailSendEvent($message, $email, $data, $recipients, $replyTo);
             $this->dispatcher->dispatch($emailSendEvent, SyliusMailerEvents::EMAIL_PRE_SEND);
@@ -69,6 +72,7 @@ class BrevoMailer implements BrevoMailerInterface
                 ->setCc($this->formatRecipients($ccRecipients))
                 ->setBcc($this->formatRecipients($bccRecipients))
                 ->setAttachments($this->formatAttachments($attachments))
+                ->setData($data)
                 ->setSubject($renderedEmail->getSubject())
                 ->setHtmlContent($renderedEmail->getBody());
 
@@ -100,9 +104,11 @@ class BrevoMailer implements BrevoMailerInterface
                 continue;
             }
 
-            $transformedRecipients[] = [
-                'email' => $nameOrAddress,
-            ];
+            if ($validator->isValid($nameOrAddress, new RFCValidation())) {
+                $transformedRecipients[] = [
+                    'email' => $nameOrAddress,
+                ];
+            }
         }
 
         return $transformedRecipients;
@@ -116,6 +122,10 @@ class BrevoMailer implements BrevoMailerInterface
         $formattedAttachments = [];
         foreach ($attachments as $attachment) {
             if (isset($attachment['filePath'])) {
+                if (!file_exists($attachment['filePath'])) {
+                    throw new \InvalidArgumentException(sprintf('File does not exist at path: %s', $attachment['filePath']));
+                }
+
                 $content = file_get_contents($attachment['filePath']);
                 if ($content === false) {
                     throw new \RuntimeException(sprintf('Could not read file at path: %s', $attachment['filePath']));
@@ -133,5 +143,21 @@ class BrevoMailer implements BrevoMailerInterface
         }
 
         return $formattedAttachments;
+    }
+
+    /**
+     * Collects data for the email, merging it with the email's code.
+     */
+    protected function collectData(array $data, EmailInterface $email): array
+    {
+        // Dispatch event to allow data customization
+        $dataEvent = new BrevoMailerDataEvent($email, $data);
+        $this->dispatcher->dispatch($dataEvent, BrevoMailerEvents::MAILER_DATA);
+        $data = $dataEvent->getData();
+
+        Assert::isMap($data);
+        Assert::allString($data);
+
+        return $data;
     }
 }

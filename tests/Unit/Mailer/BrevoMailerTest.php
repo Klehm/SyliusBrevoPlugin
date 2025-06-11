@@ -11,7 +11,6 @@ use Klehm\SyliusBrevoPlugin\Model\TemplateMessage;
 use Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface;
 use PHPUnit\Framework\TestCase;
 use Sylius\Component\Locale\Context\LocaleContextInterface;
-use Sylius\Component\Mailer\Event\EmailSendEvent;
 use Sylius\Component\Mailer\Model\EmailInterface;
 use Sylius\Component\Mailer\Renderer\RenderedEmail;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -29,11 +28,14 @@ final class BrevoMailerTest extends TestCase
 
         $apiClient->expects($this->once())
             ->method('sendEmailWithTemplate')
-            ->with($this->isInstanceOf(TemplateMessage::class));
+            ->with($this->callback(function ($message) use (&$calledMessage) {
+                $calledMessage = $message;
+                return $message instanceof TemplateMessage;
+            }));
 
-        $dispatcher->expects($this->exactly(2))
-            ->method('dispatch')
-            ->with($this->isInstanceOf(EmailSendEvent::class));
+
+        $dispatcher->expects($this->exactly(3))
+            ->method('dispatch');
 
         $mailer = new BrevoMailer($templateIdProvider, $apiClient, $dispatcher, $localeContext);
         $localeContext->method('getLocaleCode')->willReturn('en_US');
@@ -47,6 +49,16 @@ final class BrevoMailerTest extends TestCase
         $data = ['foo' => 'bar'];
 
         $mailer->send($recipients, $senderAddress, $senderName, $renderedEmail, $email, $data);
+
+        // Assertions
+        $this->assertInstanceOf(TemplateMessage::class, $calledMessage);
+        $this->assertSame(123, $calledMessage->getTemplateId());
+        $this->assertSame($senderAddress, $calledMessage->getFrom()['email']);
+        $this->assertSame($senderName, $calledMessage->getFrom()['name']);
+        $this->assertIsArray($calledMessage->getTo());
+        $this->assertCount(2, $calledMessage->getTo());
+        $this->assertArrayHasKey('foo', $calledMessage->getData());
+        $this->assertSame('bar', $calledMessage->getData()['foo']);
     }
 
     public function testSendWithoutTemplateId(): void
@@ -60,11 +72,13 @@ final class BrevoMailerTest extends TestCase
 
         $apiClient->expects($this->once())
             ->method('sendHtmlEmail')
-            ->with($this->isInstanceOf(HtmlMessage::class));
+            ->with($this->callback(function ($message) use (&$calledMessage) {
+            $calledMessage = $message;
+            return $message instanceof HtmlMessage;
+            }));
 
-        $dispatcher->expects($this->exactly(2))
-            ->method('dispatch')
-            ->with($this->isInstanceOf(EmailSendEvent::class));
+        $dispatcher->expects($this->exactly(3))
+            ->method('dispatch');
 
         $mailer = new BrevoMailer($templateIdProvider, $apiClient, $dispatcher, $localeContext);
         $localeContext->method('getLocaleCode')->willReturn('en_US');
@@ -80,6 +94,17 @@ final class BrevoMailerTest extends TestCase
         $data = ['foo' => 'bar'];
 
         $mailer->send($recipients, $senderAddress, $senderName, $renderedEmail, $email, $data);
+
+        // Assertions
+        $this->assertInstanceOf(HtmlMessage::class, $calledMessage);
+        $this->assertSame('Subject', $calledMessage->getSubject());
+        $this->assertSame('<p>Body</p>', $calledMessage->getHtmlContent());
+        $this->assertSame($senderAddress, $calledMessage->getFrom()['email']);
+        $this->assertSame($senderName, $calledMessage->getFrom()['name']);
+        $this->assertIsArray($calledMessage->getTo());
+        $this->assertCount(2, $calledMessage->getTo());
+        $this->assertArrayHasKey('foo', $calledMessage->getData());
+        $this->assertSame('bar', $calledMessage->getData()['foo']);
     }
 
     public function testFormatRecipients(): void
@@ -161,5 +186,98 @@ final class BrevoMailerTest extends TestCase
         $m = $ref->getMethod($method);
         $m->setAccessible(true);
         return $m->invokeArgs($object, $args);
+    }
+
+    public function testFormatRecipientsWithInvalidEmailFallsBackToEmailOnly(): void
+    {
+        $mailer = new \Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer(
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface::class),
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface::class),
+            $this->createMock(\Symfony\Contracts\EventDispatcher\EventDispatcherInterface::class),
+            $this->createMock(\Sylius\Component\Locale\Context\LocaleContextInterface::class)
+        );
+
+        $recipients = [
+            'not-an-email' => 'Invalid Name',
+            'valid@example.com' => 'Valid Name',
+            'foo@example.com',
+        ];
+
+        $result = $this->invokeProtected($mailer, 'formatRecipients', [$recipients]);
+
+        $this->assertNotContains(['email' => 'not-an-email'], $result);
+        $this->assertContains(['name' => 'Valid Name', 'email' => 'valid@example.com'], $result);
+        $this->assertContains(['email' => 'foo@example.com'], $result);
+    }
+
+    public function testFormatAttachmentsThrowsOnUnreadableFile(): void
+    {
+        $mailer = new \Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer(
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface::class),
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface::class),
+            $this->createMock(\Symfony\Contracts\EventDispatcher\EventDispatcherInterface::class),
+            $this->createMock(\Sylius\Component\Locale\Context\LocaleContextInterface::class)
+        );
+
+        $attachments = [
+            [
+                'filePath' => '/path/to/nonexistent/file.txt',
+                'fileName' => 'file.txt',
+            ],
+        ];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->invokeProtected($mailer, 'formatAttachments', [$attachments]);
+    }
+
+    public function testCollectData(): void
+    {
+        $mailer = new BrevoMailer(
+            $this->createMock(TemplateIdProviderInterface::class),
+            $this->createMock(BrevoApiClientInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(LocaleContextInterface::class)
+        );
+
+        $email = $this->createMock(EmailInterface::class);
+
+        $data = ['key1' => 'value1', 'key2' => 'value2'];
+        $result = $this->invokeProtected($mailer, 'collectData', [$data, $email]);
+
+        $this->assertArrayHasKey('key1', $result);
+        $this->assertArrayHasKey('key2', $result);
+    }
+
+    public function testCollectDataWithEmptyData(): void
+    {
+        $mailer = new BrevoMailer(
+            $this->createMock(TemplateIdProviderInterface::class),
+            $this->createMock(BrevoApiClientInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(LocaleContextInterface::class)
+        );
+
+        $email = $this->createMock(EmailInterface::class);
+
+        $result = $this->invokeProtected($mailer, 'collectData', [[], $email]);
+
+        $this->assertEmpty($result);
+    }
+
+    public function testCollectDataWithIncorretArray(): void
+    {
+        $mailer = new BrevoMailer(
+            $this->createMock(TemplateIdProviderInterface::class),
+            $this->createMock(BrevoApiClientInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(LocaleContextInterface::class)
+        );
+
+        $email = $this->createMock(EmailInterface::class);
+        $email->method('getCode')->willReturn(null);
+
+        $data = ['key1' => 'value1', 'key2' => ['value1', 'value2']];
+        $this->expectException(\InvalidArgumentException::class);
+        $this->invokeProtected($mailer, 'collectData', [$data, $email]);
     }
 }

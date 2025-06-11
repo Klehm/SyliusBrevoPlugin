@@ -37,3 +37,8 @@ services:
             $brevoApiClient: '@Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface'
         tags:
             - { name: "console.command" }
+
+    Klehm\SyliusBrevoPlugin\EventListener\BrevoMailerDataListener:
+        arguments: []
+        tags:
+            - { name: 'kernel.event_listener', event: 'klehm_sylius_brevo_plugin.mailer_data', method: 'onMailerData' }
