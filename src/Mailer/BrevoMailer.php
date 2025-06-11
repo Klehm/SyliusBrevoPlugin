@@ -120,26 +120,18 @@ class BrevoMailer implements BrevoMailerInterface
     protected function formatAttachments(array $attachments): array
     {
         $formattedAttachments = [];
-        foreach ($attachments as $attachment) {
-            if (isset($attachment['filePath'])) {
-                if (!file_exists($attachment['filePath'])) {
-                    throw new \InvalidArgumentException(sprintf('File does not exist at path: %s', $attachment['filePath']));
-                }
-
-                $content = file_get_contents($attachment['filePath']);
-                if ($content === false) {
-                    throw new \RuntimeException(sprintf('Could not read file at path: %s', $attachment['filePath']));
-                }
-                $formattedAttachments[] = [
-                    'name' => $attachment['fileName'] ?? basename($attachment['filePath']),
-                    'content' => base64_encode($content),
-                ];
-            } elseif (isset($attachment['content'])) {
-                $formattedAttachments[] = [
-                    'name' => $attachment['fileName'] ?? 'attachment',
-                    'content' => base64_encode($attachment['content']),
-                ];
+        foreach ($attachments as $path) {
+            if (!file_exists($path)) {
+                throw new \InvalidArgumentException(sprintf('File does not exist at path: %s', $path));
             }
+
+            $content = file_get_contents($path);
+            $filename = basename($path);
+
+            $formattedAttachments[] = [
+                'name' => $filename,
+                'content' => base64_encode($content),
+            ];
         }
 
         return $formattedAttachments;

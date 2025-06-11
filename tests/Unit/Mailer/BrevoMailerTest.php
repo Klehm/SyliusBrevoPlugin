@@ -73,8 +73,8 @@ final class BrevoMailerTest extends TestCase
         $apiClient->expects($this->once())
             ->method('sendHtmlEmail')
             ->with($this->callback(function ($message) use (&$calledMessage) {
-            $calledMessage = $message;
-            return $message instanceof HtmlMessage;
+                $calledMessage = $message;
+                return $message instanceof HtmlMessage;
             }));
 
         $dispatcher->expects($this->atLeast(3))
@@ -141,43 +141,30 @@ final class BrevoMailerTest extends TestCase
         $tmpFile = tempnam(sys_get_temp_dir(), 'att');
         file_put_contents($tmpFile, 'test content');
 
-        $attachments = [
-            [
-                'filePath' => $tmpFile,
-                'fileName' => 'test.txt',
-            ],
-        ];
+        $attachments = [$tmpFile];
 
         $result = $this->invokeProtected($mailer, 'formatAttachments', [$attachments]);
 
         $this->assertCount(1, $result);
-        $this->assertSame('test.txt', $result[0]['name']);
+        $this->assertSame(basename($tmpFile), $result[0]['name']);
         $this->assertSame(base64_encode('test content'), $result[0]['content']);
 
         unlink($tmpFile);
     }
 
-    public function testFormatAttachmentsWithContent(): void
+    public function testFormatAttachmentsThrowsOnUnreadableFile(): void
     {
-        $mailer = new BrevoMailer(
-            $this->createMock(TemplateIdProviderInterface::class),
-            $this->createMock(BrevoApiClientInterface::class),
-            $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(LocaleContextInterface::class)
+        $mailer = new \Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer(
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface::class),
+            $this->createMock(\Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface::class),
+            $this->createMock(\Symfony\Contracts\EventDispatcher\EventDispatcherInterface::class),
+            $this->createMock(\Sylius\Component\Locale\Context\LocaleContextInterface::class)
         );
 
-        $attachments = [
-            [
-                'content' => 'raw content',
-                'fileName' => 'inline.txt',
-            ],
-        ];
+        $attachments = ['/path/to/nonexistent/file.txt'];
 
-        $result = $this->invokeProtected($mailer, 'formatAttachments', [$attachments]);
-
-        $this->assertCount(1, $result);
-        $this->assertSame('inline.txt', $result[0]['name']);
-        $this->assertSame(base64_encode('raw content'), $result[0]['content']);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->invokeProtected($mailer, 'formatAttachments', [$attachments]);
     }
 
     private function invokeProtected(object $object, string $method, array $args)
@@ -208,26 +195,6 @@ final class BrevoMailerTest extends TestCase
         $this->assertNotContains(['email' => 'not-an-email'], $result);
         $this->assertContains(['name' => 'Valid Name', 'email' => 'valid@example.com'], $result);
         $this->assertContains(['email' => 'foo@example.com'], $result);
-    }
-
-    public function testFormatAttachmentsThrowsOnUnreadableFile(): void
-    {
-        $mailer = new \Klehm\SyliusBrevoPlugin\Mailer\BrevoMailer(
-            $this->createMock(\Klehm\SyliusBrevoPlugin\Provider\TemplateIdProviderInterface::class),
-            $this->createMock(\Klehm\SyliusBrevoPlugin\Api\BrevoApiClientInterface::class),
-            $this->createMock(\Symfony\Contracts\EventDispatcher\EventDispatcherInterface::class),
-            $this->createMock(\Sylius\Component\Locale\Context\LocaleContextInterface::class)
-        );
-
-        $attachments = [
-            [
-                'filePath' => '/path/to/nonexistent/file.txt',
-                'fileName' => 'file.txt',
-            ],
-        ];
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->invokeProtected($mailer, 'formatAttachments', [$attachments]);
     }
 
     public function testCollectData(): void
