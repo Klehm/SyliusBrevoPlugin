@@ -34,7 +34,7 @@ final class BrevoMailerTest extends TestCase
             }));
 
 
-        $dispatcher->expects($this->exactly(3))
+        $dispatcher->expects($this->atLeast(3))
             ->method('dispatch');
 
         $mailer = new BrevoMailer($templateIdProvider, $apiClient, $dispatcher, $localeContext);
@@ -77,7 +77,7 @@ final class BrevoMailerTest extends TestCase
             return $message instanceof HtmlMessage;
             }));
 
-        $dispatcher->expects($this->exactly(3))
+        $dispatcher->expects($this->atLeast(3))
             ->method('dispatch');
 
         $mailer = new BrevoMailer($templateIdProvider, $apiClient, $dispatcher, $localeContext);
@@ -277,7 +277,9 @@ final class BrevoMailerTest extends TestCase
         $email->method('getCode')->willReturn(null);
 
         $data = ['key1' => 'value1', 'key2' => ['value1', 'value2']];
-        $this->expectException(\InvalidArgumentException::class);
-        $this->invokeProtected($mailer, 'collectData', [$data, $email]);
+        $result = $this->invokeProtected($mailer, 'collectData', [$data, $email]);
+
+        $this->assertArrayHasKey('key1', $result);
+        $this->assertArrayNotHasKey('key2', $result);
     }
 }

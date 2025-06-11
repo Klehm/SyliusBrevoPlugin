@@ -153,9 +153,23 @@ class BrevoMailer implements BrevoMailerInterface
         // Dispatch event to allow data customization
         $dataEvent = new BrevoMailerDataEvent($email, $data);
         $this->dispatcher->dispatch($dataEvent, BrevoMailerEvents::MAILER_DATA);
+
+        if ($email->getCode() !== null) {
+            $this->dispatcher->dispatch($dataEvent, sprintf('%s.%s', BrevoMailerEvents::MAILER_DATA, $email->getCode()));
+        }
+
         $data = $dataEvent->getData();
 
         Assert::isMap($data);
+
+        // Remove any non-scalar values from the data array
+        // This is necessary because the Brevo API expects only scalar values in the data array.
+        foreach ($data as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                unset($data[$key]);
+            }
+        }
+
         Assert::allString($data);
 
         return $data;
