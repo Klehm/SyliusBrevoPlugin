@@ -1,133 +1,46 @@
 <p align="center">
-    <a href="https://sylius.com" target="_blank">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://media.sylius.com/sylius-logo-800-dark.png">
-          <source media="(prefers-color-scheme: light)" srcset="https://media.sylius.com/sylius-logo-800.png">
-          <img alt="Sylius Logo." src="https://media.sylius.com/sylius-logo-800.png">
-        </picture>
-    </a>
+    <img src="https://github.com/Klehm/SyliusBrevoPlugin/docs/banner.png" alt="Banner showing Brevo and Sylius icons" />
 </p>
 
-<h1 align="center">Plugin Skeleton</h1>
+<h1 align="center">Brevo Plugin</h1>
+<p align="center">
+    This plugin integrates your Sylius store with <a href=https://www.brevo.com/">Brevo</a>, an all-in-one AI-enabled platform to manage your customer relationships via Email, SMS, WhatsApp, Chat, and more..
+</p>
 
-<p align="center">Skeleton for starting Sylius plugins.</p>
+## What does this plugin do?
 
-## Documentation
 
-For a comprehensive guide on Sylius Plugins development please go to Sylius documentation,
-there you will find the <a href="https://docs.sylius.com/en/latest/plugin-development-guide/index.html">Plugin Development Guide</a>, that is full of examples.
+The _SyliusBrevoPlugin_ allows you to send your transactional emails through Brevo.<br />
+You can simply reuse the core HTML templates out-of-the-box or use Brevo transactional templates with the Drag & Drop editor.
+<br />
+<br />
+Also, you can customize params with event listeners, check the templating [documentation](docs/templating.md).
 
-## Quickstart Installation
 
-Run `composer create-project sylius/plugin-skeleton ProjectName`.
+## Where do I start?
 
-### Traditional
+This plugin is using the Brevo API. You must first : <br />
+1. Create/have a Brevo account (free plan is supported)
+2. Complete your profile, setup your sender email and verify your domain
+3. Create an API key ([documentation](https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys#h_01GW6ZQEKZ072SFGK03N9R6VE6))
+4. Contact the support to be able to send emails through the API/SMTP (they ask for your store URL and check your identity)
 
-1. From the plugin skeleton root directory, run the following commands:
 
-    ```bash
-    $ (cd tests/Application && yarn install)
-    $ (cd tests/Application && yarn build)
-    $ (cd tests/Application && APP_ENV=test bin/console assets:install public)
+## How can I install the plugin on my Sylius store?
 
-    $ (cd tests/Application && APP_ENV=test bin/console doctrine:database:create)
-    $ (cd tests/Application && APP_ENV=test bin/console doctrine:schema:create)
-    # Optionally load data fixtures
-    $ (cd tests/Application && APP_ENV=test bin/console sylius:fixtures:load --no-interaction)
-    ```
+Please, check the documentation at the [Installation](docs/installation.md) step.
 
-To be able to set up a plugin's database, remember to configure your database credentials in `tests/Application/.env` and `tests/Application/.env.test`.
+## What's next?
+Currently this plugin is "just" an email adapter. 
+I plan to add full integration with Brevo services : 
+- enrich data passed to templates for all Sylius core emails
+- add commands to create core emails template in Brevo
+- contacts synchronization with opt-in
+- newsletter form subscription component
 
-2. Run your local server:
+## License
+This plugin is under the MIT license. See the complete license in the LICENSE file.<br/>
+This is an unofficial plugin, I maintain this plugin free of charge and have no commercial ties to Brevo.
 
-      ```bash
-      symfony server:ca:install
-      APP_ENV=test symfony server:start --dir=tests/Application/public --daemon
-      ```
-
-3. Open your browser and navigate to `https://localhost:8000`.
-
-### Docker
-
-1. Execute `make init` to initialize the container and install the dependencies.
-
-2. Execute `make database-init` to create the database and run migrations.
-
-3. (Optional) Execute `make load-fixtures` to load the fixtures.
-
-4. Your app is available at `http://localhost`.
-
-## Usage
-
-### Running plugin tests
-
-  - PHPUnit
-
-    ```bash
-    vendor/bin/phpunit
-    ```
-
-  - PHPSpec
-
-    ```bash
-    vendor/bin/phpspec run
-    ```
-
-  - Behat (non-JS scenarios)
-
-    ```bash
-    vendor/bin/behat --strict --tags="~@javascript&&~@mink:chromedriver"
-    ```
-
-  - Behat (JS scenarios)
- 
-    1. [Install Symfony CLI command](https://symfony.com/download).
- 
-    2. Start Headless Chrome:
-    
-      ```bash
-      google-chrome-stable --enable-automation --disable-background-networking --no-default-browser-check --no-first-run --disable-popup-blocking --disable-default-apps --allow-insecure-localhost --disable-translate --disable-extensions --no-sandbox --enable-features=Metal --headless --remote-debugging-port=9222 --window-size=2880,1800 --proxy-server='direct://' --proxy-bypass-list='*' http://127.0.0.1
-      ```
-    
-    3. Install SSL certificates (only once needed) and run test application's webserver on `127.0.0.1:8080`:
-    
-      ```bash
-      symfony server:ca:install
-      APP_ENV=test symfony server:start --port=8080 --dir=tests/Application/public --daemon
-      ```
-    
-    4. Run Behat:
-    
-      ```bash
-      vendor/bin/behat --strict --tags="@javascript,@mink:chromedriver"
-      ```
-    
-  - Static Analysis
-      
-    - PHPStan
-    
-      ```bash
-      vendor/bin/phpstan analyse -c phpstan.neon -l max src/  
-      ```
-
-  - Coding Standard
-  
-    ```bash
-    vendor/bin/ecs check
-    ```
-
-### Opening Sylius with your plugin
-
-- Using `test` environment:
-
-    ```bash
-    (cd tests/Application && APP_ENV=test bin/console sylius:fixtures:load)
-    (cd tests/Application && APP_ENV=test bin/console server:run -d public)
-    ```
-    
-- Using `dev` environment:
-
-    ```bash
-    (cd tests/Application && APP_ENV=dev bin/console sylius:fixtures:load)
-    (cd tests/Application && APP_ENV=dev bin/console server:run -d public)
-    ```
+## Credits
+Developed by [Klehm](https://clementmuller.fr/).
