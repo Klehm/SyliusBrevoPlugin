@@ -25,7 +25,7 @@ jobs:
                 symfony: ["^7.1"]
                 node: ["20.x"]
                 mysql: ["8.0"]
-                sylius: ["~2.0.0", "~2.1.0"]
+                sylius: ["~2.0.0"]
 
         env:
             APP_ENV: test
