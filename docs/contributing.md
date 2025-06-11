@@ -70,4 +70,11 @@ services:
             $apiKey: "%klehm_sylius_brevo.api_key%"
             $templateMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilderInterface'
             $htmlMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilderInterface'
+
+    # Remove this declaration
+    # Klehm\SyliusBrevoPlugin\Cli\ListBrevoTransactionalTemplatesCommand:
+    #     arguments:
+    #         $brevoApiClient: '@klehm_sylius_brevo_plugin.api.brevo_client'
+    #     tags:
+    #         - { name: "console.command" }
 ```

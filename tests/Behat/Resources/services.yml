@@ -13,3 +13,9 @@ services:
             $templateMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\TemplateMessagePayloadBuilderInterface'
             $htmlMessagePayloadBuilder: '@Klehm\SyliusBrevoPlugin\Api\Builder\HtmlMessagePayloadBuilderInterface'
 
+    Klehm\SyliusBrevoPlugin\Cli\ListBrevoTransactionalTemplatesCommand:
+        arguments:
+            $brevoApiClient: '@klehm_sylius_brevo_plugin.api.brevo_client'
+        tags:
+            - { name: "console.command" }
+
