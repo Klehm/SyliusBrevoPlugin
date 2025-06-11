@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/Klehm/SyliusBrevoPlugin/docs/banner.png" alt="Banner showing Brevo and Sylius icons" />
+    <img src="docs/banner.svg" alt="Banner showing Brevo and Sylius icons" />
 </p>
 
 <h1 align="center">Brevo Plugin</h1>
