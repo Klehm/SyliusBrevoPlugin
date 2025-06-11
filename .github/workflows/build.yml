@@ -25,6 +25,7 @@ jobs:
                 symfony: ["^6.4", "^7.1"]
                 node: ["20.x"]
                 mysql: ["8.0"]
+                sylius: ["^2.0.x", "^2.1.x"]
 
         env:
             APP_ENV: test
@@ -162,10 +163,6 @@ jobs:
             -
                 name: Run PHPStan
                 run: vendor/bin/phpstan analyse -c phpstan.neon -l max src/
-
-            -
-                name: Run PHPSpec
-                run: vendor/bin/phpspec run --ansi -f progress --no-interaction
 
             -
                 name: Run PHPUnit

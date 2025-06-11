@@ -4,7 +4,7 @@
 
 <h1 align="center">Brevo Plugin</h1>
 <p align="center">
-    This plugin integrates your Sylius store with <a href=https://www.brevo.com/">Brevo</a>, an all-in-one AI-enabled platform to manage your customer relationships via Email, SMS, WhatsApp, Chat, and more..
+    This plugin integrates your Sylius store with <a href="https://www.brevo.com/">Brevo</a>, an all-in-one AI-enabled platform to manage your customer relationships via Email, SMS, WhatsApp, Chat, and more..
 </p>
 
 ## What does this plugin do?
@@ -41,6 +41,9 @@ I plan to add full integration with Brevo services :
 ## License
 This plugin is under the MIT license. See the complete license in the LICENSE file.<br/>
 This is an unofficial plugin, I maintain this plugin free of charge and have no commercial ties to Brevo.
+
+## Contributing
+Feel free to PR or contact me here !
 
 ## Credits
 Developed by [Klehm](https://clementmuller.fr/).
