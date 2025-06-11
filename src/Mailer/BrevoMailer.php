@@ -126,10 +126,12 @@ class BrevoMailer implements BrevoMailerInterface
             }
 
             $content = file_get_contents($path);
-            $filename = basename($path);
+            if ($content === false) {
+                throw new \RuntimeException(sprintf('Failed to read file at path: %s', $path));
+            }
 
             $formattedAttachments[] = [
-                'name' => $filename,
+                'name' => basename($path),
                 'content' => base64_encode($content),
             ];
         }
